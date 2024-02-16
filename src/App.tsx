@@ -16,7 +16,7 @@ export default function App() {
           <Burger opened={opened} onClick={toggle} hiddenFrom='sm' size='sm' />
           <Avatar src='/logo.png' alt='Logo' />
           <Text size='2rem' fw={200}>
-            Jeff the AI - 2
+            Jeff the AI
           </Text>
         </Group>
       </AppShell.Header>
