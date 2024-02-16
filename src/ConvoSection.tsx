@@ -111,8 +111,8 @@ export default function ConvoSection() {
       const speechEvents = hark(stream, { interval: 120 });
       speechEvents.on('speaking', function () {
         console.log('Speaking');
-        //audioChunks.current = [];
-        //stopAudio();
+        audioChunks.current = [];
+        stopAudio();
       });
       speechEvents.on('stopped_speaking', function () {
         recorder.current?.stop();
