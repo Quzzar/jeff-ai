@@ -92,8 +92,6 @@ export default function ConvoSection() {
       .getUserMedia({
         audio: {
           echoCancellation: true,
-          noiseSuppression: false,
-          autoGainControl: false,
         },
       })
       .then(function (stream) {
