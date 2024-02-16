@@ -74,7 +74,7 @@ export default function ConvoSection() {
   const handleAudioInput = async (audio: Blob) => {
     const formData = new FormData();
     formData.append('file', audio, 'audio.wav');
-    const res = await fetch(`http://localhost:3000/convo?to_id=${1}&&from_id=${-1}`, {
+    const res = await fetch(`https://jeff-ai.onrender.com/convo?to_id=${1}&&from_id=${-1}`, {
       method: 'POST',
       body: formData,
     });

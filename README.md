@@ -1,30 +1,10 @@
-# React + TypeScript + Vite
+# Jeff, My Home AI Assistant
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Meet Jeff, he's a homie 🤙
+![Jeff!](https://raw.githubusercontent.com/Quzzar/jeff-ai/main/public/npcs/1.png 'Jeff')
 
-Currently, two official plugins are available:
+He's my home assistant I built to control all my lights, tv, fireplace, etc. He's also powered by GPT-3.5 so he can do everything that can as well. He's powered by the npm package I made for simple AI conversation flows, [Vocalmind](https://github.com/Quzzar/vocalmind).
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## TODO
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
-
-- Configure the top-level `parserOptions` property like this:
-
-```js
-export default {
-  // other rules...
-  parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-    project: ['./tsconfig.json', './tsconfig.node.json'],
-    tsconfigRootDir: __dirname,
-  },
-}
-```
-
-- Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`
-- Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list
+- In the future, it would be smart to move over to use OpenAI's functions. This is the perfect application for it.
