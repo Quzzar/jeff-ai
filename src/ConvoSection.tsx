@@ -88,38 +88,46 @@ export default function ConvoSection() {
   };
 
   const startRecording = () => {
-    navigator.mediaDevices.getUserMedia({ audio: true }).then(function (stream) {
-      // Create a MediaRecorder instance to record audio
-      const mediaRecorder = new MediaRecorder(stream);
+    navigator.mediaDevices
+      .getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: false,
+          autoGainControl: false,
+        },
+      })
+      .then(function (stream) {
+        // Create a MediaRecorder instance to record audio
+        const mediaRecorder = new MediaRecorder(stream);
 
-      // Event handler when data is available (audio chunk is recorded)
-      mediaRecorder.ondataavailable = function (event) {
-        if (event.data.size > 0) {
-          audioChunks.current.push(event.data);
-        }
-      };
+        // Event handler when data is available (audio chunk is recorded)
+        mediaRecorder.ondataavailable = function (event) {
+          if (event.data.size > 0) {
+            audioChunks.current.push(event.data);
+          }
+        };
 
-      mediaRecorder.start();
+        mediaRecorder.start();
 
-      mediaRecorder.onstop = function () {
-        finishRecording(new Blob(audioChunks.current, { type: 'audio/wav' }));
-        audioChunks.current = [];
-      };
-      recorder.current = mediaRecorder;
+        mediaRecorder.onstop = function () {
+          finishRecording(new Blob(audioChunks.current, { type: 'audio/wav' }));
+          audioChunks.current = [];
+        };
+        recorder.current = mediaRecorder;
 
-      // Detect speaking events
-      const speechEvents = hark(stream, { interval: 120 });
-      speechEvents.on('speaking', function () {
-        console.log('Speaking');
-        audioChunks.current = [];
-        stopAudio();
+        // Detect speaking events
+        const speechEvents = hark(stream, { interval: 120 });
+        speechEvents.on('speaking', function () {
+          console.log('Speaking');
+          audioChunks.current = [];
+          stopAudio();
+        });
+        speechEvents.on('stopped_speaking', function () {
+          recorder.current?.stop();
+        });
+
+        forceUpdate();
       });
-      speechEvents.on('stopped_speaking', function () {
-        recorder.current?.stop();
-      });
-
-      forceUpdate();
-    });
   };
   const finishRecording = async (audioBlob: Blob) => {
     setLoading(true);
