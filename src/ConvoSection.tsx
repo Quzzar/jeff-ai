@@ -75,6 +75,8 @@ export default function ConvoSection() {
     const formData = new FormData();
     formData.append('file', audio, 'audio.wav');
     const res = await fetch(`https://jeff-ai.onrender.com/convo?to_id=${1}&from_id=${-1}`, {
+      // http://localhost:3000/
+      // https://jeff-ai.onrender.com/
       method: 'POST',
       body: formData,
     });
@@ -88,6 +90,8 @@ export default function ConvoSection() {
   };
 
   const startRecording = () => {
+    recorder.current?.stop();
+    recorder.current = undefined;
     navigator.mediaDevices
       .getUserMedia({
         audio: {
@@ -114,13 +118,14 @@ export default function ConvoSection() {
         recorder.current = mediaRecorder;
 
         // Detect speaking events
-        const speechEvents = hark(stream, { interval: 120 });
+        const speechEvents = hark(stream, { interval: 80 });
         speechEvents.on('speaking', function () {
-          console.log('Speaking');
+          console.log('Started Speaking >');
           audioChunks.current = [];
           stopAudio();
         });
         speechEvents.on('stopped_speaking', function () {
+          console.log('< Stopped Speaking');
           recorder.current?.stop();
         });
 
