@@ -118,7 +118,7 @@ export default function ConvoSection() {
         recorder.current = mediaRecorder;
 
         // Detect speaking events
-        const speechEvents = hark(stream, { interval: 100 });
+        const speechEvents = hark(stream, { interval: 120 });
         speechEvents.on('speaking', function () {
           console.log('Started Speaking >');
           audioChunks.current = [];
