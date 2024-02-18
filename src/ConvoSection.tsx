@@ -1,11 +1,10 @@
-import { Box, Button, Center, Group, Avatar } from '@mantine/core';
+import { Box, Button, Center, Group, Avatar, Loader } from '@mantine/core';
 import { useEffect, useRef, useState } from 'react';
 import { useForceUpdate } from '@mantine/hooks';
 import {
   IconPlayerPlayFilled,
   IconPlayerSkipForwardFilled,
   IconPlayerStopFilled,
-  IconVolume,
 } from '@tabler/icons-react';
 import hark from 'hark';
 import SiriWave from 'siriwave';
@@ -19,21 +18,6 @@ export default function ConvoSection() {
 
   const player = useRef<HTMLAudioElement>();
   const audiowave = useRef<SiriWave>();
-
-  // iOS doesn't allow audio to play without user interaction
-  const isIOS = () => {
-    return /iPad|iPhone|iPod/.test(navigator.userAgent);
-  };
-  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
-  useEffect(() => {
-    if (!audioBlob) return;
-    const playButton = document.getElementById('ios-play-audio');
-    playButton?.addEventListener('click', () => {
-      playAudio(audioBlob);
-      setAudioBlob(null);
-    });
-  }, [audioBlob]);
-  //
 
   const isPlaying = () => {
     return player.current && player.current.duration > 0 && !player.current.paused;
@@ -82,11 +66,7 @@ export default function ConvoSection() {
     });
     const response = await res.blob();
 
-    if (isIOS()) {
-      setAudioBlob(response);
-    } else {
-      playAudio(response);
-    }
+    playAudio(response);
   };
 
   const startRecording = () => {
@@ -94,9 +74,7 @@ export default function ConvoSection() {
     recorder.current = undefined;
     navigator.mediaDevices
       .getUserMedia({
-        audio: {
-          echoCancellation: true,
-        },
+        audio: true,
       })
       .then(function (stream) {
         // Create a MediaRecorder instance to record audio
@@ -191,11 +169,21 @@ export default function ConvoSection() {
 
   return (
     <>
-      {/* <LoadingOverlay visible={loading} loaderProps={{ type: 'oval', size: 'xl' }} /> */}
-
       <Box style={{ position: 'relative' }}>
         <Center>
           <Avatar size={`min(60vw, 500px)`} src={`/npcs/1.png`} alt={'Buddy'} />
+          {loading && (
+            <Box
+              style={{
+                position: 'absolute',
+                top: '75%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+              }}
+            >
+              <Loader type='dots' size={`min(15vw, 125px)`} />
+            </Box>
+          )}
         </Center>
         {true && (
           <Box
@@ -215,7 +203,7 @@ export default function ConvoSection() {
         <Center>
           <Group wrap='nowrap'>
             <Button
-              loading={loading}
+              disabled={loading}
               size='sm'
               variant='outline'
               onClick={async () => {
@@ -238,19 +226,8 @@ export default function ConvoSection() {
                 )
               }
             >
-              {isPlaying() ? 'Interrupt' : isRecording() ? 'Stop Talking' : 'Start Talking'}
+              {isPlaying() ? 'Interrupt' : isRecording() ? 'Stop Listening' : 'Start Listening'}
             </Button>
-
-            {audioBlob && isIOS() && (
-              <Button
-                id='ios-play-audio'
-                size='sm'
-                variant='outline'
-                rightSection={<IconVolume size='1.0rem' />}
-              >
-                Play
-              </Button>
-            )}
           </Group>
         </Center>
       </Box>
