@@ -20,11 +20,18 @@ export default function ConvoSection() {
   const audiowave = useRef<SiriWave>();
 
   const isPlaying = () => {
-    return player.current && player.current.duration > 0 && !player.current.paused;
+    return !!(player.current && player.current.duration > 0 && !player.current.paused);
   };
   const isRecording = () => {
     return recorder.current?.state === 'recording';
   };
+
+  console.log('ConvoSection rendered', {
+    isPlaying: isPlaying(),
+    isRecording: isRecording(),
+    player: player.current,
+    recorder: recorder.current,
+  });
 
   const startAudioWave = () => {
     if (audiowave.current) {
@@ -69,46 +76,45 @@ export default function ConvoSection() {
     playAudio(response);
   };
 
-  const startRecording = () => {
+  const startRecording = async () => {
     recorder.current?.stop();
     recorder.current = undefined;
-    navigator.mediaDevices
-      .getUserMedia({
-        audio: true,
-      })
-      .then(function (stream) {
-        // Create a MediaRecorder instance to record audio
-        const mediaRecorder = new MediaRecorder(stream);
 
-        // Event handler when data is available (audio chunk is recorded)
-        mediaRecorder.ondataavailable = function (event) {
-          if (event.data.size > 0) {
-            audioChunks.current.push(event.data);
-          }
-        };
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: true,
+    });
 
-        mediaRecorder.start();
+    // Create a MediaRecorder instance to record audio
+    const mediaRecorder = new MediaRecorder(stream);
+    recorder.current = mediaRecorder;
 
-        mediaRecorder.onstop = function () {
-          finishRecording(new Blob(audioChunks.current, { type: 'audio/wav' }));
-          audioChunks.current = [];
-        };
-        recorder.current = mediaRecorder;
+    // Event handler when data is available (audio chunk is recorded)
+    mediaRecorder.ondataavailable = function (event) {
+      if (event.data.size > 0) {
+        audioChunks.current.push(event.data);
+      }
+    };
 
-        // Detect speaking events
-        const speechEvents = hark(stream, { interval: 100 });
-        speechEvents.on('speaking', function () {
-          console.log('Started Speaking >');
-          audioChunks.current = [];
-          stopAudio();
-        });
-        speechEvents.on('stopped_speaking', function () {
-          console.log('< Stopped Speaking');
-          recorder.current?.stop();
-        });
+    mediaRecorder.start();
 
-        forceUpdate();
-      });
+    mediaRecorder.onstop = function () {
+      finishRecording(new Blob(audioChunks.current, { type: 'audio/wav' }));
+      audioChunks.current = [];
+    };
+
+    // Detect speaking events
+    const speechEvents = hark(stream, { interval: 100 });
+    speechEvents.on('speaking', function () {
+      console.log('Started Speaking >');
+      audioChunks.current = [];
+      stopAudio();
+    });
+    speechEvents.on('stopped_speaking', function () {
+      console.log('< Stopped Speaking');
+      recorder.current?.stop();
+    });
+
+    forceUpdate();
   };
   const finishRecording = async (audioBlob: Blob) => {
     setLoading(true);
@@ -129,6 +135,7 @@ export default function ConvoSection() {
 
   function playAudio(audioBlob: Blob) {
     stopAudio();
+    startRecording();
     try {
       const audioUrl = URL.createObjectURL(audioBlob);
 
@@ -138,14 +145,11 @@ export default function ConvoSection() {
         .then(() => {
           console.log('Audio started');
 
-          startRecording();
-
           startAudioWave();
           forceUpdate();
         })
         .catch((error) => {
           console.error('Error playing audio:', error);
-          startRecording();
         });
 
       // Release memory after playback
@@ -158,7 +162,6 @@ export default function ConvoSection() {
       });
     } catch (error) {
       console.error('Error fetching and playing audio:', error);
-      startRecording();
     }
   }
 
