@@ -135,7 +135,6 @@ export default function ConvoSection() {
 
   function playAudio(audioBlob: Blob) {
     stopAudio();
-    startRecording();
     try {
       const audioUrl = URL.createObjectURL(audioBlob);
 
@@ -158,6 +157,9 @@ export default function ConvoSection() {
 
         stopAudio();
         URL.revokeObjectURL(audioUrl);
+
+        startRecording();
+
         forceUpdate();
       });
     } catch (error) {
