@@ -149,6 +149,7 @@ export default function ConvoSection() {
         })
         .catch((error) => {
           console.error('Error playing audio:', error);
+          startRecording();
         });
 
       // Release memory after playback
@@ -164,9 +165,9 @@ export default function ConvoSection() {
       });
     } catch (error) {
       console.error('Error fetching and playing audio:', error);
+      startRecording();
     }
   }
-
   function stopAudio() {
     player.current?.pause();
     stopAudioWave();
