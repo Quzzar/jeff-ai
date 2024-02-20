@@ -19,19 +19,14 @@ export default function ConvoSection() {
   const player = useRef<HTMLAudioElement>();
   const audiowave = useRef<SiriWave>();
 
+  const isSpeaking = useRef(false);
+
   const isPlaying = () => {
     return !!(player.current && player.current.duration > 0 && !player.current.paused);
   };
   const isRecording = () => {
     return recorder.current?.state === 'recording';
   };
-
-  console.log('ConvoSection rendered', {
-    isPlaying: isPlaying(),
-    isRecording: isRecording(),
-    player: player.current,
-    recorder: recorder.current,
-  });
 
   const startAudioWave = () => {
     if (audiowave.current) {
@@ -88,29 +83,30 @@ export default function ConvoSection() {
     const mediaRecorder = new MediaRecorder(stream);
     recorder.current = mediaRecorder;
 
-    // Event handler when data is available (audio chunk is recorded)
-    mediaRecorder.ondataavailable = function (event) {
-      if (event.data.size > 0) {
-        audioChunks.current.push(event.data);
-      }
-    };
-
     mediaRecorder.start();
 
+    recorder.current.ondataavailable = function (event) {
+      console.log('Data', event.data.size, audioChunks.current.length);
+      audioChunks.current.push(event.data);
+    };
+
     mediaRecorder.onstop = function () {
-      finishRecording(new Blob(audioChunks.current, { type: 'audio/wav' }));
-      audioChunks.current = [];
+      console.log('Recording stopped', audioChunks.current);
+      finishRecording(new Blob([...audioChunks.current], { type: 'audio/wav' }));
     };
 
     // Detect speaking events
     const speechEvents = hark(stream, { interval: 100 });
     speechEvents.on('speaking', function () {
       console.log('Started Speaking >');
-      audioChunks.current = [];
+      isSpeaking.current = true;
+
       stopAudio();
     });
     speechEvents.on('stopped_speaking', function () {
       console.log('< Stopped Speaking');
+      isSpeaking.current = false;
+
       recorder.current?.stop();
     });
 
@@ -119,6 +115,8 @@ export default function ConvoSection() {
   const finishRecording = async (audioBlob: Blob) => {
     setLoading(true);
 
+    console.log('Recording finished', audioBlob.size, 1200000);
+
     // Release the microphone
     recorder.current?.stream.getTracks().forEach((track) => track.stop());
     recorder.current = undefined;
@@ -126,9 +124,14 @@ export default function ConvoSection() {
     forceUpdate();
 
     try {
-      await handleAudioInput(audioBlob);
+      if (audioBlob.size > 0) {
+        await handleAudioInput(audioBlob);
+      } else {
+        throw new Error('No valid Blob provided');
+      }
     } catch (error) {
-      /**/
+      console.error('Error sending audio:', error);
+      startRecording();
     }
     setLoading(false);
   };
